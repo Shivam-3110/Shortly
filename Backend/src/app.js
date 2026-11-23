@@ -1,4 +1,5 @@
 import express from "express";
+
 import urlRoutes from "./routes/url.routes.js"
 import {directedUrl } from "./controllers/url.controller.js";
 

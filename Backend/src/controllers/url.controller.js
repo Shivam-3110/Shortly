@@ -42,7 +42,7 @@ const createUrl = async(req,res) => {
 
 const getAllUrl = async(req,res) => {
     try {
-        const allUrl = Url.find();
+        const allUrl = await Url.find();
         return res.status(200).json({
             message:"url fetch successfully",
             data:{
@@ -57,20 +57,33 @@ const getAllUrl = async(req,res) => {
 }
 
 const directedUrl = async(req,res) => {
-    const {code} = req.params
-    const url = await urlModel.findOne({
-        shortCode:code
-    })
-    if(!url) {
-        return res.status(404).json({error:"URL not found"})
+    try {
+        const {code} = req.params
+        const url = await Url.findOne({ shortCode:code })
+        if(!url) {
+            return res.status(404).json({error:"URL not found"})
+        }
+        await Url.findOneAndUpdate({ shortCode:code },{ $inc:{clicks:1} })
+        res.redirect(302, url.originalUrl)
+    } catch (error) {
+        res.status(500).json({ error:"Internal server error" })
     }
-   res.redirect(302,url.originalUrl)
-   await urlModel.findOneAndUpdate({
-    shortCode:code
-   },{
-    $inc:{clicks:1}
-   })
+}
+
+const deleteUrl = async(req,res) => {
+    const {id} = req.params
+
+    const url = await Url.findById(id);
+    if(!url){
+        return res.status(404).json({
+            message:"URL not found"
+        })
+    }
+    await Url.findByIdAndDelete(id);
+    return res.status(200).json({
+        message:"URL deleted Successfully"
+    })
 
 }
 
-export {createUrl,getAllUr,directedUrl};
+export {createUrl,getAllUrl,directedUrl,deleteUrl};
